@@ -99,7 +99,7 @@ async function run() {
     app.delete("/api/orders/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = orderFoodCollection.deleteOne(query);
+      const result = await orderFoodCollection.deleteOne(query);
       res.send(result);
     });
 
