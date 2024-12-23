@@ -82,7 +82,7 @@ async function run() {
         .send({ logoutSuccess: true });
     });
 
-    // GET Food Collection
+    // GET All Food Collection (Public)
     app.get("/api/foods", async (req, res) => {
       const { search } = req.query;
 
@@ -95,7 +95,7 @@ async function run() {
       res.send(result);
     });
 
-    // GET Top Foods
+    // GET Top Foods (Public)
     app.get("/api/top-foods", async (req, res) => {
       const options = {
         sort: { purchaseCount: -1 },
@@ -105,10 +105,9 @@ async function run() {
       res.send(result);
     });
 
-    // GET Food By USER Email
+    // GET Food By USER Email (Private)
     app.get("/api/my-foods", verifyToken, async (req, res) => {
       const { email } = req.query;
-
       if (req.user.email !== email) {
         return res.status(403).send({ message: "Forbidden Access" });
       }
@@ -118,7 +117,7 @@ async function run() {
       res.send(result);
     });
 
-    // GET Food By Id
+    // GET Food By Id (Public)
     app.get("/api/foods/:id", async (req, res) => {
       const id = req.params.id;
 
@@ -127,15 +126,25 @@ async function run() {
       res.send(result);
     });
 
-    // Add Food
-    app.post("/api/foods", async (req, res) => {
+    // Add Food (Private)
+    app.post("/api/foods", verifyToken, async (req, res) => {
+      const { email } = req.query;
+      if (req.user.email !== email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+
       const food = req.body;
       const result = await foodCollection.insertOne(food);
       res.send(result);
     });
 
-    // Update Food By Id
-    app.patch("/api/foods/:id", async (req, res) => {
+    // Update Food By Id (Private)
+    app.patch("/api/foods/:id", verifyToken, async (req, res) => {
+      const { email } = req.query;
+      if (req.user.email !== email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+
       const id = req.params.id;
       const food = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -161,16 +170,26 @@ async function run() {
     //   res.send(result);
     // });
 
-    // Get Order By User Email
-    app.get("/api/orders", async (req, res) => {
+    // Get Order By User Email (Private)
+    app.get("/api/orders", verifyToken, async (req, res) => {
       const { email } = req.query;
+
+      if (req.user.email !== email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+
       const filter = { buyerEmail: email };
       const result = await orderFoodCollection.find(filter).toArray();
       res.send(result);
     });
 
-    // Post / Add Order
-    app.post("/api/orders", async (req, res) => {
+    // Post / Add Order (Private)
+    app.post("/api/orders", verifyToken, async (req, res) => {
+      const { email } = req.query;
+      if (req.user.email !== email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+
       const order = req.body;
       const foodId = order.foodId;
 
@@ -192,8 +211,13 @@ async function run() {
       res.send(result);
     });
 
-    // Delete Order
-    app.delete("/api/orders/:id", async (req, res) => {
+    // Delete Order (Private)
+    app.delete("/api/orders/:id", verifyToken, async (req, res) => {
+      const { email } = req.query;
+      if (req.user.email !== email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await orderFoodCollection.deleteOne(query);
