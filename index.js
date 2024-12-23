@@ -48,6 +48,14 @@ async function run() {
       res.send(result);
     });
 
+    // GET Food By USER Email
+    app.get("/api/my-foods", async (req, res) => {
+      const { email } = req.query;
+      const query = { addByEmail: email };
+      const result = await foodCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // GET Food By Id
     app.get("/api/foods/:id", async (req, res) => {
       const id = req.params.id;
