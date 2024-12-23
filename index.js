@@ -21,6 +21,24 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Create Custom Middleware
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized Access" });
+  }
+
+  jwt.verify(token, process.env.ACCESS_KEY, (err, decode) => {
+    if (err) {
+      return res.status(401).send({ message: "Unauthorized Access" });
+    }
+
+    req.user = decode;
+    next();
+  });
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.0m3jt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -38,7 +56,7 @@ async function run() {
     const orderFoodCollection = client.db("tastrDB").collection("orders");
 
     // Create JWT Token
-    app.post("/jwt", (req, res) => {
+    app.post("/api/jwt", (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_KEY, {
         expiresIn: "30d",
@@ -54,7 +72,7 @@ async function run() {
     });
 
     // Remove JWT Token
-    app.post("/jwt/logout", (req, res) => {
+    app.post("/api/jwt/logout", (req, res) => {
       res
         .clearCookie("token", {
           httpOnly: true,
@@ -88,8 +106,13 @@ async function run() {
     });
 
     // GET Food By USER Email
-    app.get("/api/my-foods", async (req, res) => {
+    app.get("/api/my-foods", verifyToken, async (req, res) => {
       const { email } = req.query;
+
+      if (req.user.email !== email) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+
       const query = { addByEmail: email };
       const result = await foodCollection.find(query).toArray();
       res.send(result);
