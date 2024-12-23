@@ -57,6 +57,13 @@ async function run() {
       res.send(result);
     });
 
+    // Add Food
+    app.post("/api/foods", async (req, res) => {
+      const food = req.body;
+      const result = await foodCollection.insertOne(food);
+      res.send(result);
+    });
+
     // Order Collection
     // Get Order Collection
     // app.get("/api/orders", async (req, res) => {
