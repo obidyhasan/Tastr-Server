@@ -11,6 +11,7 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
+      "http://localhost:5174",
       "http://localhost:5173",
       "https://tastr-client.web.app",
       "https://tastr-client.firebaseapp.com",
@@ -51,7 +52,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const foodCollection = client.db("tastrDB").collection("foods");
     const orderFoodCollection = client.db("tastrDB").collection("orders");
 
