@@ -96,6 +96,15 @@ async function run() {
       res.send(result);
     });
 
+    // GET Food by Category (Public)
+    app.post("/api/foods/category", async (req, res) => {
+      const data = req.body;
+      console.log(data);
+      const query = { category: data.category };
+      const result = await foodCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // GET Top Foods (Public)
     app.get("/api/top-foods", async (req, res) => {
       const options = {
