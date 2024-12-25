@@ -87,13 +87,26 @@ async function run() {
     app.get("/api/foods", async (req, res) => {
       const { search } = req.query;
 
+      const page = parseInt(req?.query?.page);
+      const size = parseInt(req?.query?.size);
+
       let query = {};
       if (search) {
         query = { name: { $regex: search, $options: "i" } };
       }
 
-      const result = await foodCollection.find(query).toArray();
+      const result = await foodCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
+    });
+
+    // Foods Count
+    app.get("/api/foodsCount", async (req, res) => {
+      const count = await foodCollection.estimatedDocumentCount();
+      res.send({ count });
     });
 
     // GET Food by Category (Public)
