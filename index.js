@@ -85,7 +85,7 @@ async function run() {
 
     // GET All Food Collection (Public)
     app.get("/api/foods", async (req, res) => {
-      const { search } = req.query;
+      const { search, sort } = req.query;
 
       const page = parseInt(req?.query?.page);
       const size = parseInt(req?.query?.size);
@@ -95,8 +95,13 @@ async function run() {
         query = { name: { $regex: search, $options: "i" } };
       }
 
+      let options = {};
+      if (sort === "true") {
+        options = { sort: { price: -1 } };
+      }
+
       const result = await foodCollection
-        .find(query)
+        .find(query, options)
         .skip(page * size)
         .limit(size)
         .toArray();
